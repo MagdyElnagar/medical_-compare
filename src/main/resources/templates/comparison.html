@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+
+<head>
+	<meta charset="UTF-8">
+	<title>مقارنة الخصومات بين المخازن</title>
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
+	<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+	<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.bootstrap5.min.css">
+</head>
+
+<body class="bg-light">
+
+	<div class="container-fluid mt-4">
+		<div class="card shadow">
+			<div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+				<h4 class="mb-0">جدول مقارنة خصومات الصيادلة</h4>
+				<div>
+					<a href="/" class="btn btn-primary btn-sm">رفع ملفات إضافية</a>
+					<a href="/clear" class="btn btn-danger btn-sm">تصفير البيانات</a>
+				</div>
+			</div>
+			<div class="card-body">
+				<div class="table-responsive">
+					<table id="compTable" class="table table-bordered table-hover data-table">
+						<thead class="table-dark">
+							<tr>
+								<th>مسلسل</th>
+								<th>اسم الصنف</th>
+								<th>التركيز</th>
+								<th>السعر</th>
+								<!-- هنا يتم إنشاء عمود لكل مخزن بشكل ديناميكي -->
+								<th th:each="wName : ${warehouses}" th:text="${wName}"></th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr th:each="row, stat : ${comparisonRows}">
+								<td th:text="${stat.count}"></td>
+								<td class="fw-bold" th:text="${row.brandName}"></td>
+								<td class="text-center" th:text="${row.strength}"></td>
+								<td th:text="${row.price}"></td>
+
+								<!-- نمر على كل المخازن ونرى هل هذا الصنف موجود عنده أم لا -->
+								<td th:each="wName : ${warehouses}" class="text-center discount  " th:attr="title=${wName}">
+									<span th:if="${row.warehouseDiscounts.containsKey(wName)}" class=""
+										th:text="${row.warehouseDiscounts.get(wName)}">
+									</span>
+									<span th:unless="${row.warehouseDiscounts.containsKey(wName)}"
+										class="text-muted" >-</span>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Scripts -->
+	<script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+	<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+	<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+	<script>
+		$(document).ready(function () {
+			$('#compTable').DataTable({
+				language: {url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/ar.json'},
+				pageLength: 20,
+				paging: true,
+				searching: true,
+				ordering: true,
+				dom: 'Bfrtip', // لتفعيل أزرار الطباعة والاكسيل
+				responsive: true
+			});
+
+
+			$('#compTable tbody tr').each(function () {
+				let discounts = $(this).find('.discount');
+				if (discounts.length === 0) return;
+
+				let values = discounts.map(function () {
+					let v = parseFloat($(this).text());
+					return isNaN(v) ? -Infinity : v;
+				}).get();
+
+				if (values.length === 0) return;
+				let max = Math.max(...values);
+				if (!isFinite(max)) return;
+
+				discounts.each(function () {
+					let v = parseFloat($(this).text());
+					if (!isNaN(v) && v === max) {
+						$(this).addClass(' bg-success p-2');
+					}
+				});
+				discounts.each(function () {
+					let v = parseFloat($(this).text());
+					if (isNaN(v) && v !== max) {
+						$(this).addClass(' bg-secondry p-2 ');
+					}
+				});
+				discounts.each(function () {
+					let v = parseFloat($(this).text());
+					if (!isNaN(v) && v < max) {
+						$(this).addClass(' bg-warning p-2 ');
+					}
+				});
+
+			});
+		});
+	</script>
+</body>
+
+</html>
