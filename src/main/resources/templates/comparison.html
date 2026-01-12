@@ -27,7 +27,6 @@
 							<tr>
 								<th>مسلسل</th>
 								<th>اسم الصنف</th>
-								<th>التركيز</th>
 								<th>السعر</th>
 								<!-- هنا يتم إنشاء عمود لكل مخزن بشكل ديناميكي -->
 								<th th:each="wName : ${warehouses}" th:text="${wName}"></th>
@@ -37,7 +36,6 @@
 							<tr th:each="row, stat : ${comparisonRows}">
 								<td th:text="${stat.count}"></td>
 								<td class="fw-bold" th:text="${row.brandName}"></td>
-								<td class="text-center" th:text="${row.strength}"></td>
 								<td th:text="${row.price}"></td>
 
 								<!-- نمر على كل المخازن ونرى هل هذا الصنف موجود عنده أم لا -->

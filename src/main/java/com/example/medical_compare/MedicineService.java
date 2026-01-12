@@ -1,7 +1,9 @@
 package com.example.medical_compare;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.springframework.stereotype.Service;
@@ -23,15 +25,46 @@ public class MedicineService {
 	public String cleanMedicineName(String name) {
 		if (name == null)
 			return "";
-
+		String clean;
 		// إزالة التطويل والرموز
-		String clean = name.replaceAll("ـ", "").replaceAll("[أإآ]", "ا").replaceAll("ة", "ه").replaceAll("ى", "ي").replaceAll(".xlsx","").replaceAll(".xls","")
-				.replaceAll("سعر جديد","").replaceAll("سعر قديم","").replaceAll(" س ق ","").replaceAll(" س ج ","").replaceAll(" س ","").replaceAll("س جديد ","")
-				.replaceAll("جديد","").replaceAll("قديم","").replaceAll("جديييد","").replaceAll("سعر","").replaceAll("جدييييييييييد","")
-				.replaceAll("جدييييييييييييد","").replaceAll("جدييييد","").replaceAll("جدييد","")
-				.replaceAll("[/\\*\\-]", " ").replaceAll("\\s+", " ").trim();
+		name = name.replaceAll("٠", "0").replaceAll("١", "1").replaceAll("٢", "2").replaceAll("٣", "3")
+				.replaceAll("٤", "4").replaceAll("٥", "5").replaceAll("٦", "6").replaceAll("٧", "7")
+				.replaceAll("٨", "8").replaceAll("٩", "9").replaceAll(" بلس", " plus ").replaceAll(" بلاس", " plus ").replaceAll(" بلاص", " plus ").trim();
+				
+		clean = name.replaceAll("ـ", "").replaceAll("[أإآ]", "ا").replaceAll("ة", "ه").replaceAll("ى", "ي")
+				.replaceAll("س جديييييييد ", "")
+				.replaceAll(".xlsx", "").replaceAll(".xls", "").replaceAll("سعر\\d+", "").replaceAll("س ج\\d+", "")
+				.replaceAll("(?i)باكو\\s*\\d+", "").replaceAll(" س ج\\d+", "").replaceAll("سعر \\d+", "").trim();
+
+		clean = clean.replaceAll("سعر جديد", "").replaceAll("ق س", "").replaceAll("سعر قديم", "").replaceAll(" س ق ", "")
+				.replaceAll("س جديد ", "").replaceAll("جديد", "").replaceAll("قديم", "").replaceAll("جديييد", "")
+				.replaceAll("سعر", "").replaceAll(" س ج", "").replaceAll("جدييييييييييد", "")
+				.replaceAll("جدييييييييييييد", "").replaceAll("جدييييد", "").replaceAll("جدييد", "")
+				.replaceAll("جدييييييد", "").replaceAll("81ج", "").replaceAll("(?i)سعر", "")
+				.replaceAll("(?i)باكو\\s*\\d+", "") // إزالة "باكو" متبوعة بأرقام
+				.replaceAll("ك\\d+", "") // إزالة "ك" متبوعة بأرقام
+				.replaceAll("فوار", "اكياس").replaceAll("حبيبات", "اكياس").replaceAll("اكس تينشن", "اكستنشن")
+
+				.replaceAll("سعر جديد\\d+", "")
+
+				.replaceAll("[\\*\\-\\+\\=\\_\\#\\@\\!\\؟\\،\\؛]", " ").replaceAll("[\\*\\-]", " ")
+				.replaceAll("\\s+", " ").trim();
 
 		return clean;
+	}
+
+	private static final Map<Character, Character> ARABIC_TO_ENGLISH_DIGITS = new HashMap<>();
+	static {
+		ARABIC_TO_ENGLISH_DIGITS.put('٠', '0');
+		ARABIC_TO_ENGLISH_DIGITS.put('١', '1');
+		ARABIC_TO_ENGLISH_DIGITS.put('٢', '2');
+		ARABIC_TO_ENGLISH_DIGITS.put('٣', '3');
+		ARABIC_TO_ENGLISH_DIGITS.put('٤', '4');
+		ARABIC_TO_ENGLISH_DIGITS.put('٥', '5');
+		ARABIC_TO_ENGLISH_DIGITS.put('٦', '6');
+		ARABIC_TO_ENGLISH_DIGITS.put('٧', '7');
+		ARABIC_TO_ENGLISH_DIGITS.put('٨', '8');
+		ARABIC_TO_ENGLISH_DIGITS.put('٩', '9');
 	}
 
 	public Medicine parseExcelRow(String rawName, Double price, Double discount, String warehouse) {
@@ -78,7 +111,8 @@ public class MedicineService {
 
 		// Regex يبحث عن رقم يليه مباشرة أو بمسافة وحدة قياس (عربي أو إنجليزي)
 		// الوحدات: مجم، مل، جم، مج، mg, ml, gm, g
-		String regex = "(\\d+(\\.\\d+)?\\s*(مجم|مل|جم|مج|mg|ml|gm|g|mcg|اطفال|كبار|شيكولاته|فانيليا|لبن|حليب|رضع|بلس|كو|))";
+		String regex = "(مجم|مل|جم|مج|mg|ml|gm|g|mcg)";
+
 		Pattern pattern = Pattern.compile(regex, Pattern.UNICODE_CASE);
 		java.util.regex.Matcher matcher = pattern.matcher(name);
 
@@ -88,7 +122,7 @@ public class MedicineService {
 			return name.substring(0, matcher.end()).trim();
 		}
 
-		return name; // إذا لم يجد وحدة، يعيد الاسم كما هو
+		return name;// إذا لم يجد وحدة، يعيد الاسم كما هو
 	}
 
 	private String extractStrength(String name) {
@@ -98,6 +132,4 @@ public class MedicineService {
 		return matcher.find() ? matcher.group() : "";
 	}
 
-
 }
-
