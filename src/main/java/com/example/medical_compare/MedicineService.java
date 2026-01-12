@@ -25,8 +25,8 @@ public class MedicineService {
 			return "";
 
 		// إزالة التطويل والرموز
-		String clean = name.replaceAll("ـ", "").replaceAll("[أإآ]", "ا").replaceAll("ة", "ه").replaceAll("ى", "ي")
-				.replaceAll("[/\\*\\-]", " ").replaceAll("\\s+", " ").replaceAll("\\b(.xlx|.xlsx|.xls)\\b", " ").trim();
+		String clean = name.replaceAll("ـ", "").replaceAll("[أإآ]", "ا").replaceAll("ة", "ه").replaceAll("ى", "ي").replaceAll(".xlsx","").replaceAll(".xls","")
+				.replaceAll("[/\\*\\-]", " ").replaceAll("\\s+", " ").trim();
 
 		return clean;
 	}
@@ -95,4 +95,6 @@ public class MedicineService {
 		return matcher.find() ? matcher.group() : "";
 	}
 
+
 }
+

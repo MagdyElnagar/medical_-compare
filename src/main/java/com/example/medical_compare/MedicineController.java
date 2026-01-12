@@ -30,36 +30,40 @@ public class MedicineController {
 	}
 
 	@PostMapping("/upload")
-	public String uploadExcel(@RequestParam("file") MultipartFile file) throws Exception {
-		Workbook workbook = WorkbookFactory.create(file.getInputStream());
-		Sheet sheet = workbook.getSheetAt(0);
-		String fileName = file.getOriginalFilename();
-		fileName = service.cleanMedicineName(fileName);
+	public String uploadMultipleExcel(@RequestParam("files") MultipartFile[] files) throws Exception {
+	    for (MultipartFile file : files) {
+	        if (file.isEmpty()) continue;
 
-		List<Medicine> medicines = new ArrayList<>();
-		for (Row row : sheet) {
-			if (row.getRowNum() == 0)
-				continue; // تخطي العنوان
+	      
+	        String warehouseName = service.cleanMedicineName(file.getOriginalFilename());
 
-			try {
-				
-				String name = service.cleanMedicineName(row.getCell(0).getStringCellValue());
-				
-				
-				Double price = row.getCell(1).getNumericCellValue();
-				Double discount = row.getCell(2).getNumericCellValue();
-				
+	        // 1. مسح البيانات القديمة لهذا المخزن فقط قبل الرفع الجديد
+	        repository.deleteByWarehouse(warehouseName);
 
-				medicines.add(service.parseExcelRow(name, price, discount, fileName));
-				
-			} catch (Exception e) {
-				// تخطي السطور الفارغة أو الخاطئة
-			}
-		}
-		repository.saveAll(medicines);
-		return "redirect:/comparison";
+	        // 2. معالجة الملف كما فعلنا سابقاً
+	        Workbook workbook = WorkbookFactory.create(file.getInputStream());
+	        Sheet sheet = workbook.getSheetAt(0);
+	        
+	        List<Medicine> medicines = new ArrayList<>();
+	        for (Row row : sheet) {
+	            if (row.getRowNum() == 0) continue; 
+	            try {
+	                // قراءة البيانات (تأكد من ترتيب الأعمدة عندك: اسم، سعر، خصم)
+	                String name = row.getCell(0).getStringCellValue();
+	                Double price = row.getCell(1).getNumericCellValue();
+	                Double discount = row.getCell(2).getNumericCellValue();
+	                
+	                medicines.add(service.parseExcelRow(name, price, discount, warehouseName));
+	            } catch (Exception e) {
+	                // سطر خاطئ، أكمل الباقي
+	            }
+	        }
+	        // 3. حفظ البيانات الجديدة للمخزن
+	        repository.saveAll(medicines);
+	        workbook.close();
+	    }
+	    return "redirect:/comparison";
 	}
-
 	@GetMapping("/view-data")
 	public String viewData(Model model) {
 		model.addAttribute("medicines", repository.findAll());

@@ -22,8 +22,8 @@
 			</div>
 			<div class="card-body">
 				<div class="table-responsive">
-					<table id="compTable" class="table table-bordered table-hover data-table">
-						<thead class="table-dark">
+					<table id="compTable" class="table  table-hover ">
+						<thead class="">
 							<tr>
 								<th>مسلسل</th>
 								<th>اسم الصنف</th>
@@ -46,7 +46,7 @@
 										th:text="${row.warehouseDiscounts.get(wName)}">
 									</span>
 									<span th:unless="${row.warehouseDiscounts.containsKey(wName)}"
-										class="text-muted" >-</span>
+										class="text-muted" ></span>
 								</td>
 							</tr>
 						</tbody>
