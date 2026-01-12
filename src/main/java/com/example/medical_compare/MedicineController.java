@@ -31,39 +31,41 @@ public class MedicineController {
 
 	@PostMapping("/upload")
 	public String uploadMultipleExcel(@RequestParam("files") MultipartFile[] files) throws Exception {
-	    for (MultipartFile file : files) {
-	        if (file.isEmpty()) continue;
+		for (MultipartFile file : files) {
+			if (file.isEmpty())
+				continue;
 
-	      
-	        String warehouseName = service.cleanMedicineName(file.getOriginalFilename());
+			String warehouseName = service.cleanMedicineName(file.getOriginalFilename());
 
-	        // 1. مسح البيانات القديمة لهذا المخزن فقط قبل الرفع الجديد
-	        repository.deleteByWarehouse(warehouseName);
+			// 1. مسح البيانات القديمة لهذا المخزن فقط قبل الرفع الجديد
+			repository.deleteByWarehouse(warehouseName);
 
-	        // 2. معالجة الملف كما فعلنا سابقاً
-	        Workbook workbook = WorkbookFactory.create(file.getInputStream());
-	        Sheet sheet = workbook.getSheetAt(0);
-	        
-	        List<Medicine> medicines = new ArrayList<>();
-	        for (Row row : sheet) {
-	            if (row.getRowNum() == 0) continue; 
-	            try {
-	                // قراءة البيانات (تأكد من ترتيب الأعمدة عندك: اسم، سعر، خصم)
-	                String name = row.getCell(0).getStringCellValue();
-	                Double price = row.getCell(1).getNumericCellValue();
-	                Double discount = row.getCell(2).getNumericCellValue();
-	                
-	                medicines.add(service.parseExcelRow(name, price, discount, warehouseName));
-	            } catch (Exception e) {
-	                // سطر خاطئ، أكمل الباقي
-	            }
-	        }
-	        // 3. حفظ البيانات الجديدة للمخزن
-	        repository.saveAll(medicines);
-	        workbook.close();
-	    }
-	    return "redirect:/comparison";
+			// 2. معالجة الملف كما فعلنا سابقاً
+			Workbook workbook = WorkbookFactory.create(file.getInputStream());
+			Sheet sheet = workbook.getSheetAt(0);
+
+			List<Medicine> medicines = new ArrayList<>();
+			for (Row row : sheet) {
+				if (row.getRowNum() == 0)
+					continue;
+				try {
+					// قراءة البيانات (تأكد من ترتيب الأعمدة عندك: اسم، سعر، خصم)
+					String name = row.getCell(0).getStringCellValue();
+					Double price = row.getCell(1).getNumericCellValue();
+					Double discount = row.getCell(2).getNumericCellValue();
+					medicines.add(
+							service.parseExcelRow(service.cleanMedicineName(name), price, discount, warehouseName));
+				} catch (Exception e) {
+					// سطر خاطئ، أكمل الباقي
+				}
+			}
+			// 3. حفظ البيانات الجديدة للمخزن
+			repository.saveAll(medicines);
+			workbook.close();
+		}
+		return "redirect:/comparison";
 	}
+
 	@GetMapping("/view-data")
 	public String viewData(Model model) {
 		model.addAttribute("medicines", repository.findAll());
@@ -75,70 +77,65 @@ public class MedicineController {
 		repository.deleteAll();
 		return "redirect:/";
 	}
-	
-	
 
-	
 	@GetMapping("/comparison")
 	public String showComparison(Model model) {
-	    List<Medicine> allMedicines = repository.findAll();
-	    List<String> warehouses = allMedicines.stream()
-	            .map(Medicine::getWarehouse)
-	            .distinct()
-	            .collect(Collectors.toList());
+		List<Medicine> allMedicines = repository.findAll();
+		List<String> warehouses = allMedicines.stream().map(Medicine::getWarehouse).distinct()
+				.collect(Collectors.toList());
 
-	    // نستخدم LinkedHashMap للحفاظ على ترتيب الإدخال
-	    Map<String, ComparisonRow> comparisonMap = new LinkedHashMap<>();
+		// نستخدم LinkedHashMap للحفاظ على ترتيب الإدخال
+		Map<String, ComparisonRow> comparisonMap = new LinkedHashMap<>();
 
-	    for (Medicine med : allMedicines) {
-	        // 1. تنظيف الاسم (البراند والتركيز)
-	        String cleanName = service.cleanMedicineName(med.getBrandName());
-	        String strength = med.getStrength() != null ? med.getStrength() : "";
-	        Double price = med.getPrice();
+		for (Medicine med : allMedicines) {
+			// 1. تنظيف الاسم (البراند والتركيز)
+			String cleanName = service.cleanMedicineName(med.getBrandName());
+			String strength = med.getStrength() != null ? med.getStrength() : "";
+			Double price = med.getPrice();
 
-	        // 2. البحث عن صنف موجود بنفس السعر ونفس الاسم (تقريباً)
-	        String bestKey = findMatchByPriceAndName(comparisonMap, cleanName, strength, price);
+			// 2. البحث عن صنف موجود بنفس السعر ونفس الاسم (تقريباً)
+			String bestKey = findMatchByPriceAndName(comparisonMap, cleanName, strength, price);
 
-	        if (bestKey != null) {
-	            // صنف مطابق في السعر والاسم -> ندمج الخصم
-	            comparisonMap.get(bestKey).getWarehouseDiscounts().put(med.getWarehouse(), med.getDiscount());
-	        } else {
-	            // صنف جديد تماماً (سعر مختلف أو اسم بعيد)
-	            ComparisonRow row = new ComparisonRow();
-	            row.setBrandName(med.getBrandName());
-	            row.setStrength(strength);
-	            row.setPrice(price);
-	            row.getWarehouseDiscounts().put(med.getWarehouse(), med.getDiscount());
-	            
-	            // المفتاح الجديد يحتوي على السعر لضمان عدم تداخل الأسعار المختلفة
-	            String newKey = price + "_" + cleanName + "_" + strength;
-	            comparisonMap.put(newKey, row);
-	        }
-	    }
+			if (bestKey != null) {
+				// صنف مطابق في السعر والاسم -> ندمج الخصم
+				comparisonMap.get(bestKey).getWarehouseDiscounts().put(med.getWarehouse(), med.getDiscount());
+			} else {
+				// صنف جديد تماماً (سعر مختلف أو اسم بعيد)
+				ComparisonRow row = new ComparisonRow();
+				row.setBrandName(med.getBrandName());
+				row.setStrength(strength);
+				row.setPrice(price);
+				row.getWarehouseDiscounts().put(med.getWarehouse(), med.getDiscount());
 
-	    model.addAttribute("warehouses", warehouses);
-	    model.addAttribute("comparisonRows", comparisonMap.values());
-	    return "comparison";
+				// المفتاح الجديد يحتوي على السعر لضمان عدم تداخل الأسعار المختلفة
+				String newKey = price + "_" + cleanName + "_" + strength;
+				comparisonMap.put(newKey, row);
+			}
+		}
+
+		model.addAttribute("warehouses", warehouses);
+		model.addAttribute("comparisonRows", comparisonMap.values());
+		return "comparison";
 	}
 
 	// الخوارزمية الجديدة: السعر هو الحكم
 	private String findMatchByPriceAndName(Map<String, ComparisonRow> map, String name, String strength, Double price) {
-	    JaroWinklerSimilarity jw = new JaroWinklerSimilarity();
-	    
-	    for (String key : map.keySet()) {
-	        ComparisonRow existing = map.get(key);
-	        
-	        // الشرط الأول: السعر متطابق تماماً
-	        boolean isSamePrice = Math.abs(existing.getPrice() - price) < 0.01;
-	        
-	        if (isSamePrice) {
-	            // الشرط الثاني: الاسم متشابه جداً (أكثر من 85%) بنفس السعر
-	            double score = jw.apply(existing.getBrandName().toLowerCase(), name.toLowerCase());
-	            if (score > 0.85) {
-	                return key;
-	            }
-	        }
-	    }
-	    return null;
+		JaroWinklerSimilarity jw = new JaroWinklerSimilarity();
+
+		for (String key : map.keySet()) {
+			ComparisonRow existing = map.get(key);
+
+			// الشرط الأول: السعر متطابق تماماً
+			boolean isSamePrice = Math.abs(existing.getPrice() - price) < 0.01;
+
+			if (isSamePrice) {
+				// الشرط الثاني: الاسم متشابه جداً (أكثر من 85%) بنفس السعر
+				double score = jw.apply(existing.getBrandName().toLowerCase(), name.toLowerCase());
+				if (score > 0.85) {
+					return key;
+				}
+			}
+		}
+		return null;
 	}
 }

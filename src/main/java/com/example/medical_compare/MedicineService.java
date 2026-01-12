@@ -26,6 +26,9 @@ public class MedicineService {
 
 		// إزالة التطويل والرموز
 		String clean = name.replaceAll("ـ", "").replaceAll("[أإآ]", "ا").replaceAll("ة", "ه").replaceAll("ى", "ي").replaceAll(".xlsx","").replaceAll(".xls","")
+				.replaceAll("سعر جديد","").replaceAll("سعر قديم","").replaceAll(" س ق ","").replaceAll(" س ج ","").replaceAll(" س ","").replaceAll("س جديد ","")
+				.replaceAll("جديد","").replaceAll("قديم","").replaceAll("جديييد","").replaceAll("سعر","").replaceAll("جدييييييييييد","")
+				.replaceAll("جدييييييييييييد","").replaceAll("جدييييد","").replaceAll("جدييد","")
 				.replaceAll("[/\\*\\-]", " ").replaceAll("\\s+", " ").trim();
 
 		return clean;
@@ -75,7 +78,7 @@ public class MedicineService {
 
 		// Regex يبحث عن رقم يليه مباشرة أو بمسافة وحدة قياس (عربي أو إنجليزي)
 		// الوحدات: مجم، مل، جم، مج، mg, ml, gm, g
-		String regex = "(\\d+(\\.\\d+)?\\s*(مجم|مل|جم|مج|mg|ml|gm|g|mcg))";
+		String regex = "(\\d+(\\.\\d+)?\\s*(مجم|مل|جم|مج|mg|ml|gm|g|mcg|اطفال|كبار|شيكولاته|فانيليا|لبن|حليب|رضع|بلس|كو|))";
 		Pattern pattern = Pattern.compile(regex, Pattern.UNICODE_CASE);
 		java.util.regex.Matcher matcher = pattern.matcher(name);
 
