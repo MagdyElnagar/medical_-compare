@@ -132,7 +132,7 @@ public class MedicineController {
 			if (isSamePrice) {
 				// الشرط الثاني: الاسم متشابه جداً (أكثر من 85%) بنفس السعر
 				double score = jw.apply(existing.getBrandName().toLowerCase(), name.toLowerCase());
-				if (score > 0.91) {
+				if (score > 0.90) {
 					return key;
 				}
 
@@ -144,3 +144,4 @@ public class MedicineController {
 	}
 
 }
+
