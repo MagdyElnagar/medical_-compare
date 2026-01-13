@@ -53,13 +53,7 @@ public class MedicineController {
 					String name = row.getCell(0).getStringCellValue();
 					Double price = row.getCell(1).getNumericCellValue();
 					Double discount = row.getCell(2).getNumericCellValue();
-					System.out.println(warehouseName);
-					if (warehouseName.equals("arwa")) {
-						System.out.println("دخل ال if" + warehouseName);
-
-						Double new_discount = (discount + 1.0);
-						// discount = new_discount;
-					}
+	
 					medicines.add(
 							service.parseExcelRow(service.cleanMedicineName(name), price, discount, warehouseName));
 				} catch (Exception e) {
