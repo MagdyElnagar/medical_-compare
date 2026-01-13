@@ -46,7 +46,7 @@ public class MedicineService {
 				.replaceAll("سعر", "").replaceAll(" س ج ", "").replaceAll("جدييييييييييد", "")
 				.replaceAll("جدييييييييييييد", "").replaceAll("جدييييد", "").replaceAll("جدييد", "")
 				.replaceAll("جدييييييد", "").replaceAll("81ج", "").replaceAll("(?i)سعر", "")
-.replaceAll("اقراص", "tap").replaceAll(" ق ", "tap").replaceAll("قرص", "tap").replaceAll("كبسول", "tap").replaceAll(" ك ", "tap")
+.replaceAll("اقراص", "tap").replaceAll(" ق ", "tap").replaceAll("قرص", "tap").replaceAll("كبسول", "tap").replaceAll(" ك ", "tap").replaceAll("كبسوله", "tap")
 				.replaceAll("ك\\d+", "") // إزالة "ك" متبوعة بأرقام
 				.replaceAll("فوار", "اكياس").replaceAll("حبيبات", "اكياس").replaceAll("اكس تينشن", "اكستنشن")
 
@@ -138,4 +138,5 @@ public class MedicineService {
 	}
 
 }
+
 
