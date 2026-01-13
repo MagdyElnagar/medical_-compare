@@ -29,23 +29,28 @@ public class MedicineService {
 		// إزالة التطويل والرموز
 		name = name.replaceAll("٠", "0").replaceAll("١", "1").replaceAll("٢", "2").replaceAll("٣", "3")
 				.replaceAll("٤", "4").replaceAll("٥", "5").replaceAll("٦", "6").replaceAll("٧", "7")
-				.replaceAll("٨", "8").replaceAll("٩", "9").replaceAll(" بلس", " plus ").replaceAll(" بلاس", " plus ").replaceAll(" بلاص", " plus ").trim();
+				.replaceAll("٨", "8").replaceAll("٩", "9").replaceAll(" بلس", " plus ").replaceAll(" بلاس", " plus ").replaceAll(" بلاص", " plus ")
+				.replaceAll(" بلاس ", " plus ")
+				.trim();
 				
 		clean = name.replaceAll("ـ", "").replaceAll("[أإآ]", "ا").replaceAll("ة", "ه").replaceAll("ى", "ي")
-				.replaceAll("س جديييييييد ", "")
+				.replaceAll("س جديييييييد", "")
 				.replaceAll(".xlsx", "").replaceAll(".xls", "").replaceAll("سعر\\d+", "").replaceAll("س ج\\d+", "")
-				.replaceAll("(?i)باكو\\s*\\d+", "").replaceAll(" س ج\\d+", "").replaceAll("سعر \\d+", "").trim();
+				.replaceAll("(?i) باكو\\s*\\d+", "").replaceAll(" س ج\\d+", "").replaceAll("سعر \\d+", "")
+				.replaceAll("شريط", "").replaceAll("شريططط", "").replaceAll("58ج", "").replaceAll("شريط", "")
+				.trim();
 
-		clean = clean.replaceAll("سعر جديد", "").replaceAll("ق س", "").replaceAll("سعر قديم", "").replaceAll(" س ق ", "")
+		clean = clean.replaceAll("سعر جديد", "").replaceAll(" س.ج\\d+", "").replaceAll("ق س", "").replaceAll("سعر قديم", "").replaceAll(" س ق ", "").replaceAll("الاسكندريه", "")
 				.replaceAll("س جديد ", "").replaceAll("جديد", "").replaceAll("قديم", "").replaceAll("جديييد", "")
-				.replaceAll("سعر", "").replaceAll(" س ج", "").replaceAll("جدييييييييييد", "")
+				
+				.replaceAll("سعر", "").replaceAll(" س ج ", "").replaceAll("جدييييييييييد", "")
 				.replaceAll("جدييييييييييييد", "").replaceAll("جدييييد", "").replaceAll("جدييد", "")
 				.replaceAll("جدييييييد", "").replaceAll("81ج", "").replaceAll("(?i)سعر", "")
-				.replaceAll("(?i)باكو\\s*\\d+", "") // إزالة "باكو" متبوعة بأرقام
+
 				.replaceAll("ك\\d+", "") // إزالة "ك" متبوعة بأرقام
 				.replaceAll("فوار", "اكياس").replaceAll("حبيبات", "اكياس").replaceAll("اكس تينشن", "اكستنشن")
 
-				.replaceAll("سعر جديد\\d+", "")
+				.replaceAll("سعر جديد\\d+", "").replaceAll("س.ج", "").replaceAll(" س ", "")
 
 				.replaceAll("[\\*\\-\\+\\=\\_\\#\\@\\!\\؟\\،\\؛]", " ").replaceAll("[\\*\\-]", " ")
 				.replaceAll("\\s+", " ").trim();
